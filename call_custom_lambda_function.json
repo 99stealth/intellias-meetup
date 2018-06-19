@@ -1,0 +1,37 @@
+{
+    "AWSTemplateFormatVersion":"2010-09-09",
+    "Description": "Example for Intellias meetup",
+    "Parameters": {
+        "SecurityGroupName": {
+            "Type": "String",
+            "Description": "Enter securiy group name"
+        },
+        "VPCID": {
+            "Type":"AWS::EC2::VPC::Id",
+            "Description": "Choose VPC which you want to use for Security Group deployment"
+        }
+    },
+    "Resources": {
+        "SomeSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": { "Fn::GetAtt": ["GetSecurityGroupName", "Value"] },
+                "GroupDescription": { "Fn::Sub": "Some security group"},
+                "VpcId": { "Ref": "VPCID" }
+            }
+        },
+        "GetSecurityGroupName": {
+            "Type": "Custom::GetSecurityGroupName",
+            "Properties": {
+              "ServiceToken": { "Fn::ImportValue" : "GenerateRandomNumberForSecurityGroup"},
+              "SecurityGroupName": { "Ref": "SecurityGroupName"}
+            }
+        }
+    },
+    "Outputs": {
+        "SecurityGroupName": {
+            "Description": "Security Group's Name",
+            "Value": { "Ref": "SomeSecurityGroup" }
+        }
+    }
+}

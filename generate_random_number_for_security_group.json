@@ -1,0 +1,91 @@
+{
+    "Resources": {
+      "LambdaExecutionRole": {
+        "Type": "AWS::IAM::Role",
+        "Properties": {
+          "AssumeRolePolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": [
+                    "lambda.amazonaws.com"
+                  ]
+                },
+                "Action": [
+                  "sts:AssumeRole"
+                ]
+              }
+            ]
+          },
+          "Path": "/",
+          "Policies": [
+            {
+              "PolicyName": { "Ref": "AWS::StackName" },
+              "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement":
+                [
+                  {
+                    "Effect": "Allow",
+                    "Action": [
+                      "logs:CreateLogGroup",
+                      "logs:CreateLogStream",
+                      "logs:PutLogEvents"
+                    ],
+                    "Resource": "arn:aws:logs:*:*:*"
+                  }
+                ]
+              }
+            }
+          ],
+          "RoleName": { "Ref": "AWS::StackName" }
+        }
+      },
+      "GenerateRandomNumberForSecurityGroup": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "FunctionName": { "Ref": "AWS::StackName" },
+          "Handler": "index.lambda_handler",
+          "Role": { "Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+          "Runtime": "python2.7",
+          "MemorySize": "128",
+          "Timeout": "5",
+          "Code": {
+            "ZipFile": {
+              "Fn::Join": [
+                "\n",
+                [
+                    "from random import randint",
+                    "import cfnresponse",
+                    "",
+                    "def random_number():",
+                    "    ''' Returns random number from 1 to 100'''",
+                    "    return randint(1, 100)",
+                    "",
+                    "def lambda_handler(event, context):",
+                    "    ''' Returns name of security group '''",
+                    "    if event['RequestType'] == 'Delete':",
+                    "        cfnresponse.send(event, context, cfnresponse.SUCCESS, {'Value': '0'})",
+                    "        return",
+                    "    else:",
+                    "        random_num = random_number()",
+                    "        security_group_name = '{0}-{1}'.format(event['ResourceProperties']['SecurityGroupName'], random_num)",
+                    "        cfnresponse.send(event, context, cfnresponse.SUCCESS, {'Value': security_group_name }, security_group_name)",
+                    "        return security_group_name"
+                ]
+            ]
+          }
+        }
+      }
+    }
+  },
+  "Outputs":{
+    "LambdaFunction": {
+      "Description": "ARN of function which allows to generate random number for security group name",
+      "Value": { "Fn::GetAtt" : ["GenerateRandomNumberForSecurityGroup", "Arn"] },
+      "Export": { "Name": "GenerateRandomNumberForSecurityGroup" }
+    }
+  }
+}
