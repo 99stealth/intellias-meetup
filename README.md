@@ -14,3 +14,5 @@ Repository is created for Intellias meetup. Enjoy AWS ECS, CloudFormation and La
 3. Fill `Stack name` field and press `Next`
 4. Once stack has beed deployed create another one stack but now with `call_custom_lambda_function.json`. Type `SecurityGroupName` (what ever you want), and choose `VPC`
 5. Voila, your firs custom function is creaed. Enjoy
+
+Thank you for visiting conference or just watching the video
